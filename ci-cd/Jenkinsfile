@@ -17,7 +17,7 @@ pipeline {
                 script {
                     def services = ['service1', 'service2']
                     for (service in services) {
-                        sh "docker build -t gcr.io/${GCP_PROJECT}/${service}:latest -f ./microservices/${service}/Dockerfile${service} ./microservices/${service}"                    }
+                        sh "docker build -t gcr.io/${GCP_PROJECT}/${service}:latest -f ./microservices/${service}/Dockerfile.${service} ./microservices/${service}"                    }
                 }
             }
         }
