@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/mete20/end-to-end-devops.git'
+                git branch: 'main', url: 'https://github.com/mete20/end-to-end-devops.git'
             }
         }
         stage('Build Docker Images') {
