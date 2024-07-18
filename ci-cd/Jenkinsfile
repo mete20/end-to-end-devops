@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    environment {
+        GCP_PROJECT = 'devops-school-enuygun'
+        GCR_CREDENTIALS = credentials('gcr-json-key')
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/mete20/end-to-end-devops.git'
+            }
+        }
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    def services = ['service1', 'service2']
+                    for (service in services) {
+                        sh "docker build -t gcr.io/${GCP_PROJECT}/${service}:latest ./microservices/${service}"
+                    }
+                }
+            }
+        }
+        stage('Push Docker Images') {
+            steps {
+                script {
+                    def services = ['service1', 'service2']
+                    for (service in services) {
+                        sh "docker push gcr.io/${GCP_PROJECT}/${service}:latest"
+                    }
+                }
+            }
+        }
+        stage('Deploy to GKE') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh "helm upgrade --install my-app ./helm-chart --set image.repository=gcr.io/${GCP_PROJECT}"
+                }
+            }
+        }
+    }
+}
