@@ -40,7 +40,6 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: "${GCR_CREDENTIALS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh """
-                    helm delete my-app || true
                     helm upgrade --install my-app ./helm-chart \
                         --set service1.image.repository=yakametehan/end-to-end-service1 \
                         --set service1.image.tag=latest \
