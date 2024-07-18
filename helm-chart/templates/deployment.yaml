@@ -1,19 +1,45 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
+  name: service1
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: {{ .Chart.Name }}
+      app: service1
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}
+        app: service1
     spec:
       containers:
-      - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+      - name: service1
+        image: "{{ .Values.service1.image.repository }}:{{ .Values.service1.image.tag }}"
         ports:
-        - containerPort: 80
+        - containerPort: 3000
+        volumeMounts:
+        - mountPath: /app
+          name: app-volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: service2
+  template:
+    metadata:
+      labels:
+        app: service2
+    spec:
+      containers:
+      - name: service2
+        image: "{{ .Values.service2.image.repository }}:{{ .Values.service2.image.tag }}"
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - mountPath: /app
+          name: app-volume
