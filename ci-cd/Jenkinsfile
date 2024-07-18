@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GCP_PROJECT = 'devops-school-enuygun'
-        GCR_CREDENTIALS = credentials('gcr-json-key')
+        DOCKER_CREDENTIALS_ID = 'dockerhub-creds'
     }
 
     stages {
@@ -17,24 +17,34 @@ pipeline {
                 script {
                     def services = ['service1', 'service2']
                     for (service in services) {
-                        sh "docker build -t yakametehan/end-to-end/${service}:latest -f ./microservices/${service}/Dockerfile.${service} ./microservices/${service}"                    }
+                        sh "docker build -t yakametehan/end-to-end/${service}:latest -f ./microservices/${service}/Dockerfile.${service} ./microservices/${service}"
+                    }
                 }
             }
         }
         stage('Push Docker Images') {
             steps {
                 script {
-                    def services = ['service1', 'service2']
-                    for (service in services) {
-                        sh "docker push yakametehan/end-to-end/${service}:latest"
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                        def services = ['service1', 'service2']
+                        for (service in services) {
+                            sh "docker push yakametehan/end-to-end/${service}:latest"
+                        }
                     }
                 }
             }
         }
         stage('Deploy to GKE') {
             steps {
-                withCredentials([file(credentialsId: 'gcr-json-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    sh "helm upgrade --install my-app ./helm-chart --set image.repository=yakametehan/end-to-end/"
+                withCredentials([file(credentialsId: "${GCR_CREDENTIALS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    sh """
+                    helm upgrade --install my-app ./helm-chart \
+                        --set service1.image.repository=yakametehan/end-to-end/service1 \
+                        --set service1.image.tag=latest \
+                        --set service2.image.repository=yakametehan/end-to-end/service2 \
+                        --set service2.image.tag=latest
+                    """
                 }
             }
         }
