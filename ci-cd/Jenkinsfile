@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/mete20/end-to-end-devops.git'
+                git 'https://github.com/your-username/project-root.git'
             }
         }
         stage('Build Docker Images') {
@@ -34,7 +34,7 @@ pipeline {
         }
         stage('Deploy to GKE') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: 'gcr-json-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh "helm upgrade --install my-app ./helm-chart --set image.repository=gcr.io/${GCP_PROJECT}"
                 }
             }
